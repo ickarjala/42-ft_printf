@@ -1,0 +1,10 @@
+**
+!.gitignore
+!Makefile
+!src/
+!src/*.c
+!src/*.h
+
+!eval_tests/
+!eval_tests/*.test
+!eval_tests/Makefile
