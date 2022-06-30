@@ -6,7 +6,7 @@
 #    By: ikarjala <ikarjala@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/11/05 16:57:32 by ikarjala          #+#    #+#              #
-#    Updated: 2022/06/30 15:45:13 by ikarjala         ###   ########.fr        #
+#    Updated: 2022/06/30 17:17:44 by ikarjala         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,26 +14,28 @@ NAME	= libftprintf.a
 BIN		= $(ROOT)$(NAME)
 
 CFUNC	= \
-main
+ft_printf
 
 ROOT		= ./
 SRC_DIR		= $(ROOT)src/
 OBJ_DIR		= $(ROOT)obj
 SRC			= $(addprefix $(SRC_DIR),$(addsuffix .c,$(CFUNC)))
 OBJ			= $(addprefix $(OBJ_DIR),$(addsuffix .o,$(CFUNC)))
-INC_DIR		= $(SRC_DIR) $(LIB_DIR)/
+INC_DIR		= $(SRC_DIR)
 CMD_INC		= $(addprefix -I ,$(INC_DIR))
 
 CFLAGS		= -Wall -Wextra -Werror
 DEBUG_FLAGS	= $(CFLAGS) -Wimplicit -Wconversion -g -fsanitize=address
 CC			= clang
 
+.PHONY: clean lclean fclean re install
+
 ##	BUILD ====
 all: $(NAME)
 $(NAME): lib
 	@echo	$(BMSG_BIN)
 	$(CC) -c $(CFLAGS) $(SRC) $(CMD_INC)
-	$(CC) -o $(BIN) $(OBJ) -L$(LIB_DIR) -l $(LIB)
+	$(CC) -o $(BIN) $(OBJ)
 	@echo	$(BMSG_FIN)
 lib:
 	make -C $(LIB_DIR)	all
@@ -44,7 +46,7 @@ debug: lib
 		-L$(LIB_DIR) -l $(LIB)
 	@echo	$(BMSG_FIN)
 
-##	CLEAN ====
+##	CLEANUP ====
 clean:
 	rm -f $(OBJ)
 	make -C $(LIB_DIR)	clean
@@ -54,7 +56,6 @@ lclean: clean
 	make -C $(LIB_DIR)	fclean
 re: fclean all
 
-.PHONY: clean lclean fclean re install
 BMSG_BIN	= '$(COL_HL)' '$(NAME) :: Starting build...' '$(COL_NUL)'
 BMSG_FIN	= '$(COL_CS)' '$(NAME) :: Build success!' '$(COL_NUL)'
 BMSG_DBG	= '$(COL_HL)' '$(NAME) :: Starting =DEBUG= build...' '$(COL_NUL)'
@@ -66,4 +67,4 @@ COL_NUL		= #\e[0;0m
 ##	UTILS ====
 CMD_NORME	= norminette -R CheckForbiddenSourceHeader
 norme:
-	$(CMD_NORME) $(SRC_DIR)*.c $(LIB_DIR)/*.c $(addsuffix *.h,$(INC_DIR))
+	$(CMD_NORME) $(SRC_DIR)*.c $(addsuffix *.h,$(INC_DIR))
