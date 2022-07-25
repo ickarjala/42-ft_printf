@@ -6,65 +6,84 @@
 #    By: ikarjala <ikarjala@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/11/05 16:57:32 by ikarjala          #+#    #+#              #
-#    Updated: 2022/06/30 17:17:44 by ikarjala         ###   ########.fr        #
+#    Updated: 2022/07/25 16:33:43 by ikarjala         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME	= libftprintf.a
+ROOT	:= ./
+NAME	:= libftprintf.a
 BIN		= $(ROOT)$(NAME)
+SO		= $(NAME:.a=.so)
 
 CFUNC	= \
 ft_printf
 
-ROOT		= ./
 SRC_DIR		= $(ROOT)src/
-OBJ_DIR		= $(ROOT)obj
-SRC			= $(addprefix $(SRC_DIR),$(addsuffix .c,$(CFUNC)))
-OBJ			= $(addprefix $(OBJ_DIR),$(addsuffix .o,$(CFUNC)))
+OBJ_DIR		= $(ROOT)obj/
 INC_DIR		= $(SRC_DIR)
-CMD_INC		= $(addprefix -I ,$(INC_DIR))
+
+SRC			= $(CFUNC:%=$(SRC_DIR)%.c)
+OBJ			= $(CFUNC:%=$(OBJ_DIR)%.o)
+INCLUDE		= $(addprefix -I , $(INC_DIR))
+RM			= rm -f
 
 CFLAGS		= -Wall -Wextra -Werror
-DEBUG_FLAGS	= $(CFLAGS) -Wimplicit -Wconversion -g -fsanitize=address
+DEBUG_FLAGS	= -Wimplicit -Wconversion -g -fsanitize=address
+SOFLAGS		= -nostartfiles -fPIC
 CC			= clang
+AR			= ar -cr
 
-.PHONY: clean lclean fclean re install
+.PHONY: all clean fclean re db debug so $(PRE_BUILD_MESSAGE)
 
-##	BUILD ====
 all: $(NAME)
-$(NAME): lib
-	@echo	$(BMSG_BIN)
-	$(CC) -c $(CFLAGS) $(SRC) $(CMD_INC)
-	$(CC) -o $(BIN) $(OBJ)
+$(NAME): $(OBJ) Makefile
+	@echo	$(BMSG_AR)
+	@$(AR)		$(BIN) $(OBJ)
+	@ranlib		$(BIN)
 	@echo	$(BMSG_FIN)
-lib:
-	make -C $(LIB_DIR)	all
-install: re clean
-debug: lib
-	@echo	$(BMSG_DBG)
-	$(CC) -o $(BIN) $(DEBUG_FLAGS) $(SRC) $(CMD_INC) \
-		-L$(LIB_DIR) -l $(LIB)
-	@echo	$(BMSG_FIN)
+$(SO): NAME := $(SO)
+$(SO): $(NAME)
 
-##	CLEANUP ====
+$(OBJ): $(OBJ_DIR)%.o:$(SRC_DIR)%.c Makefile
+	@printf	"$<    \t\t... "
+	@$(CC) -c $(CFLAGS) $(INCLUDE) $< -o $@
+	@echo	"DONE"
+
 clean:
-	rm -f $(OBJ)
-	make -C $(LIB_DIR)	clean
-fclean: clean lclean
-	rm -f $(BIN)
-lclean: clean
-	make -C $(LIB_DIR)	fclean
+	@echo	'Cleaning objects...'
+	@$(RM) $(OBJ)
+fclean: clean
+	@echo	'Removing binaries...'
+	@$(RM) $(BIN) $(BIN:.a=.so)
 re: fclean all
 
-BMSG_BIN	= '$(COL_HL)' '$(NAME) :: Starting build...' '$(COL_NUL)'
-BMSG_FIN	= '$(COL_CS)' '$(NAME) :: Build success!' '$(COL_NUL)'
-BMSG_DBG	= '$(COL_HL)' '$(NAME) :: Starting =DEBUG= build...' '$(COL_NUL)'
+so: CFLAGS += $(SOFLAGS)
+so: BMSG_FORM := SO (dylib)
+so: $(SO)
 
-COL_HL		= #\e[0;33m
-COL_CS		= #\e[0;32m
-COL_NUL		= #\e[0;0m
+db: debug
+debug: CFLAGS += $(DEBUG_FLAGS)
+debug: BMSG_FORM := =DEBUG=
+debug: $(NAME)
+
+$(PRE_BUILD_MESSAGE):
+	@echo	$(BMSG_BIN)
+	@echo	$(BMSG_CC)
+	@echo	$(BMSG_RELINK)
+
+BMSG_BIN	= '$(COL_HL)$(NAME) :: Starting $(BMSG_FORM) build... $(COL_NUL)'
+BMSG_FORM	:= deploy
+
+BMSG_CC		= '$(COL_HL)$(NAME) :: Using $(CC) with $(CFLAGS) $(COL_NUL)'
+BMSG_RELINK	= '$(COL_HL)$(NAME) :: Compiling C objects:'
+BMSG_AR		= '$(COL_HL)$(NAME) :: Linking... { $(AR) }'
+BMSG_FIN	= '$(COL_CS)$(NAME) :: Build success! $(COL_NUL)'
+
+#COL_HL		:=\033[0;33m
+#COL_CS		:=\033[0;32m
+#COL_NUL	:=\033[0;0m
 
 ##	UTILS ====
 CMD_NORME	= norminette -R CheckForbiddenSourceHeader
 norme:
-	$(CMD_NORME) $(SRC_DIR)*.c $(addsuffix *.h,$(INC_DIR))
+	$(CMD_NORME) $(SRC_DIR)*.c $(INC_DIR)*.h
