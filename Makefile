@@ -6,7 +6,7 @@
 #    By: ikarjala <ikarjala@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/11/05 16:57:32 by ikarjala          #+#    #+#              #
-#    Updated: 2022/07/25 16:33:43 by ikarjala         ###   ########.fr        #
+#    Updated: 2022/07/26 19:08:28 by ikarjala         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -54,7 +54,7 @@ clean:
 	@$(RM) $(OBJ)
 fclean: clean
 	@echo	'Removing binaries...'
-	@$(RM) $(BIN) $(BIN:.a=.so)
+	@$(RM) $(BIN) $(SO)
 re: fclean all
 
 so: CFLAGS += $(SOFLAGS)
@@ -87,3 +87,5 @@ BMSG_FIN	= '$(COL_CS)$(NAME) :: Build success! $(COL_NUL)'
 CMD_NORME	= norminette -R CheckForbiddenSourceHeader
 norme:
 	$(CMD_NORME) $(SRC_DIR)*.c $(INC_DIR)*.h
+run:
+	make -C eval_tests	run

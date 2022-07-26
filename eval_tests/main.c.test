@@ -1,0 +1,45 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ikarjala <ikarjala@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/07/26 14:28:33 by ikarjala          #+#    #+#             */
+/*   Updated: 2022/07/26 19:24:52 by ikarjala         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "tester.h"
+
+static int	ko_c = 0;
+static int	assert(const char *format, ...)
+{
+	int		ret_t;
+	int		ret_o;
+	va_list	args_t;
+	va_list	args_o;
+
+	va_start(args, format);
+	va_copy(args_o, args_t);
+	printf("real: ");
+	ret_t = vprintf(format, args_t);
+	printf("\n");
+	va_end(args_t);
+
+	printf("ours: ");
+	ret_o = ft_vprintf(format, args_o);
+	printf("\n");
+	va_end(args_o);
+
+	ko_c += ret_t != ret_o;
+	// this only tests that the amount of bytes written was the same
+	// collect the strings and compare!
+	return (ret_t == ret_o);
+}
+
+int	main(void)
+{
+	assert("here is a basic test");
+	return (ko_c);
+}
